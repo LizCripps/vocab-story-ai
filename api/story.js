@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 export const config = {
-  runtime: "nodejs20"
+  maxDuration: 30
 };
 
 export default async function handler(req, res) {
