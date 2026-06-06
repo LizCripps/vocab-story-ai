@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vocab Story AI</title>
+  <!-- SheetJS — Excel parsing, loaded from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    /* ── Reset & Tokens ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #22263a;
+      --border:    #2e3250;
+      --accent:    #6c63ff;
+      --accent-h:  #8b84ff;
+      --accent-g:  linear-gradient(135deg,#6c63ff 0%,#a78bfa 100%);
+      --text:      #e8eaf6;
+      --muted:     #8b8fa8;
+      --success:   #4ade80;
+      --danger:    #f87171;
+      --warning:   #fbbf24;
+      --radius:    14px;
+      --shadow:    0 8px 32px rgba(0,0,0,.45);
+      --font:      'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 5rem;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    header { text-align: center; margin-bottom: 2.5rem; }
+    .badge {
+      display: inline-block;
+      background: var(--accent-g);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      padding: .3rem .9rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    header h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      background: var(--accent-g);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15;
+    }
+    header p { margin-top: .6rem; color: var(--muted); font-size: .97rem; }
+
+    /* ── Card ────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      width: 100%;
+      max-width: 760px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Mode Toggle ─────────────────────────────────────── */
+    .mode-toggle {
+      display: flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 1.8rem;
+      gap: 4px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: .65rem 1rem;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: var(--font);
+    }
+    .mode-btn.active { background: var(--accent-g); color: #fff; }
+
+    /* ── Form Helpers ────────────────────────────────────── */
+    .form-group { margin-bottom: 1.4rem; }
+    .field-label {
+      display: block;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+    select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: .93rem;
+      border-radius: 9px;
+      padding: .7rem 1rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      cursor: pointer;
+    }
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,.25);
+    }
+    select option { background: var(--surface2); }
+    .hint { font-size: .75rem; color: var(--muted); margin-top: .4rem; }
+
+    /* ── Word Tag Input ──────────────────────────────────── */
+    #tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: .6rem .75rem;
+      min-height: 54px;
+      cursor: text;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    #tag-container:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,.25);
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      background: rgba(108,99,255,.22);
+      border: 1px solid rgba(108,99,255,.4);
+      color: #c4bfff;
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .25rem .6rem;
+      border-radius: 999px;
+    }
+    .tag button {
+      background: none;
+      border: none;
+      color: #c4bfff;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      opacity: .65;
+      transition: opacity .15s;
+    }
+    .tag button:hover { opacity: 1; }
+    #word-input {
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: .93rem;
+      font-family: var(--font);
+      outline: none;
+      flex: 1;
+      min-width: 140px;
+      padding: .15rem 0;
+    }
+
+    /* ── Settings Row ────────────────────────────────────── */
+    .settings-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.4rem;
+    }
+    @media (max-width: 580px) { .settings-row { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 400px) { .settings-row { grid-template-columns: 1fr; } }
+
+    /* ── Story Type Pills ────────────────────────────────── */
+    .type-pills { display: flex; gap: .5rem; }
+    .type-pill {
+      flex: 1;
+      padding: .55rem .5rem;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: var(--font);
+    }
+    .type-pill.active {
+      border-color: var(--accent);
+      background: rgba(108,99,255,.15);
+      color: var(--accent-h);
+    }
+    .type-pill small {
+      display: block;
+      font-size: .67rem;
+      opacity: .78;
+      margin-top: .12rem;
+      font-weight: 400;
+    }
+
+    /* ── Word Limit Row ──────────────────────────────────── */
+    .word-limit-row {
+      display: flex;
+      align-items: center;
+      gap: .9rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .85rem 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .limit-label {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+    }
+    /* Toggle switch */
+    .toggle-wrap { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .toggle-wrap input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .toggle-track::before {
+      content: '';
+      position: absolute;
+      width: 14px; height: 14px;
+      left: 3px; top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .2s;
+    }
+    .toggle-wrap input:checked ~ .toggle-track { background: var(--accent); }
+    .toggle-wrap input:checked ~ .toggle-track::before { transform: translateX(16px); }
+    /* Slider controls */
+    #limit-controls {
+      display: none;
+      flex: 1;
+      align-items: center;
+      gap: .75rem;
+    }
+    #limit-controls.show { display: flex; }
+    input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+    .limit-val {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--accent-h);
+      min-width: 72px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* ── Excel Drop Zone ─────────────────────────────────── */
+    #excel-panel { display: none; }
+    #excel-panel.show { display: block; }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 2.2rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      margin-bottom: 1rem;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(108,99,255,.05);
+    }
+    .dz-icon { font-size: 2.4rem; margin-bottom: .65rem; }
+    .drop-zone p { color: var(--muted); font-size: .9rem; }
+    .drop-zone p strong { color: var(--accent-h); }
+    .drop-zone p small { display: block; margin-top: .3rem; font-size: .76rem; }
+    #file-input { display: none; }
+
+    /* ── Sheet Preview ───────────────────────────────────── */
+    #sheet-preview { display: none; margin-bottom: 1.4rem; }
+    #sheet-preview.show { display: block; }
+    .preview-header {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .7rem;
+    }
+    .sheet-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .85rem 1rem;
+      margin-bottom: .5rem;
+    }
+    .sheet-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 2px; }
+    .sheet-info { flex: 1; min-width: 0; }
+    .sheet-name { font-size: .9rem; font-weight: 700; color: var(--text); }
+    .sheet-meta { font-size: .76rem; color: var(--muted); margin-top: .18rem; }
+    .sheet-words-preview {
+      font-size: .73rem;
+      color: var(--accent-h);
+      margin-top: .3rem;
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sheet-status { flex-shrink: 0; font-size: .76rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px; }
+    .sheet-status.pending  { background: rgba(139,143,168,.15); color: var(--muted); }
+    .sheet-status.running  { background: rgba(251,191,36,.15);  color: var(--warning); }
+    .sheet-status.done     { background: rgba(74,222,128,.15);  color: var(--success); }
+    .sheet-status.error    { background: rgba(248,113,113,.15); color: var(--danger); }
+
+    /* ── Progress Bar ────────────────────────────────────── */
+    #progress-wrap { display: none; margin-top: 1rem; }
+    #progress-wrap.show { display: block; }
+    .progress-label { font-size: .82rem; color: var(--muted); margin-bottom: .45rem; }
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent-g);
+      border-radius: 999px;
+      width: 0%;
+      transition: width .5s ease;
+    }
+
+    /* ── Divider ─────────────────────────────────────────── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    /* ── Generate Button ─────────────────────────────────── */
+    #generate-btn {
+      width: 100%;
+      padding: .92rem;
+      background: var(--accent-g);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 18px rgba(108,99,255,.4);
+      font-family: var(--font);
+    }
+    #generate-btn:hover:not(:disabled) {
+      opacity: .9;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(108,99,255,.55);
+    }
+    #generate-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2.5px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: .4rem;
+    }
+    .spinner.show { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error Box ───────────────────────────────────────── */
+    #error-box {
+      display: none;
+      background: rgba(248,113,113,.1);
+      border: 1px solid rgba(248,113,113,.3);
+      border-radius: 9px;
+      padding: .85rem 1rem;
+      color: var(--danger);
+      font-size: .88rem;
+      margin-top: 1.2rem;
+    }
+    #error-box.show { display: block; }
+
+    /* ── Output Section ──────────────────────────────────── */
+    #output-section { display: none; margin-top: .5rem; }
+    #output-section.show { display: block; }
+
+    /* Story tabs (Excel batch mode) */
+    #tab-nav {
+      display: none;
+      flex-wrap: wrap;
+      gap: .35rem;
+      margin-bottom: 1rem;
+      padding-bottom: .75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    #tab-nav.show { display: flex; }
+    .story-tab {
+      padding: .38rem .85rem;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: var(--font);
+      white-space: nowrap;
+    }
+    .story-tab.active {
+      background: rgba(108,99,255,.15);
+      border-color: var(--accent);
+      color: var(--accent-h);
+    }
+    .story-tab.has-error { color: var(--danger); border-color: rgba(248,113,113,.4); }
+
+    /* Output header */
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+    .output-header h2 { font-size: 1rem; font-weight: 700; }
+    .meta-pills { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .pill {
+      font-size: .7rem;
+      font-weight: 600;
+      padding: .18rem .6rem;
+      border-radius: 999px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+
+    /* Story text box */
+    #story-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      line-height: 1.9;
+      font-size: .97rem;
+      color: var(--text);
+      word-break: break-word;
+      margin-bottom: 1rem;
+    }
+    #story-box .story-title {
+      display: block;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+    /* Bold vocabulary words rendered by the API */
+    #story-box strong {
+      color: var(--accent-h);
+      font-weight: 700;
+    }
+
+    /* Comprehension Questions */
+    #questions-box {
+      background: rgba(108,99,255,.07);
+      border: 1px solid rgba(108,99,255,.22);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.8rem;
+      margin-bottom: 1rem;
+    }
+    .questions-heading {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--accent-h);
+      margin-bottom: .9rem;
+    }
+    #questions-list {
+      list-style: none;
+      counter-reset: qcount;
+    }
+    #questions-list li {
+      counter-increment: qcount;
+      display: flex;
+      gap: .75rem;
+      margin-bottom: .75rem;
+      font-size: .92rem;
+      line-height: 1.65;
+      align-items: flex-start;
+    }
+    #questions-list li::before {
+      content: counter(qcount);
+      background: var(--accent-g);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: .18rem;
+    }
+
+    /* Action buttons */
+    .action-row {
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+    }
+    .btn-out {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .5rem .95rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s;
+      font-family: var(--font);
+    }
+    .btn-out:hover {
+      border-color: var(--accent);
+      color: var(--accent-h);
+      background: rgba(108,99,255,.08);
+    }
+    .btn-out.success { border-color: var(--success); color: var(--success); }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    footer { margin-top: 3rem; text-align: center; color: var(--muted); font-size: .76rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">✦ AI Powered</div>
+  <h1>Vocab Story AI</h1>
+  <p>Enter words manually or upload an Excel file — Claude writes each story with comprehension questions.</p>
+</header>
+
+<div class="card">
+
+  <!-- ── Mode Toggle ── -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-manual" onclick="setMode('manual')">📝 Manual Entry</button>
+    <button class="mode-btn"        id="btn-excel"  onclick="setMode('excel')">📊 Excel Upload</button>
+  </div>
+
+  <!-- ══ MANUAL PANEL ══ -->
+  <div id="manual-panel">
+    <div class="form-group">
+      <span class="field-label">Your Words <span style="color:var(--danger)">*</span></span>
+      <div id="tag-container" onclick="document.getElementById('word-input').focus()">
+        <input id="word-input" type="text"
+               placeholder="Type a word and press Enter or comma…"
+               autocomplete="off" spellcheck="false" />
+      </div>
+      <p class="hint" id="word-hint">Short story: add 10–13 words &nbsp;·&nbsp; Long story: add 15–20 words</p>
+    </div>
+  </div>
+
+  <!-- ══ EXCEL PANEL ══ -->
+  <div id="excel-panel">
+    <div class="form-group">
+      <span class="field-label">Upload Excel File (.xlsx)</span>
+      <div class="drop-zone" id="drop-zone"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="onDragOver(event)"
+           ondragleave="onDragLeave(event)"
+           ondrop="onDrop(event)">
+        <div class="dz-icon">📊</div>
+        <p><strong>Click to browse</strong> or drag &amp; drop your .xlsx file here</p>
+        <p><small>Each sheet tab = one story &nbsp;·&nbsp; Words read from all cells</small></p>
+        <input type="file" id="file-input" accept=".xlsx,.xls" onchange="onFileSelect(event)" />
+      </div>
+      <div id="sheet-preview">
+        <div class="preview-header" id="preview-header"></div>
+        <div id="sheet-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ══ SETTINGS ══ -->
+  <div class="settings-row">
+    <div class="form-group" style="margin-bottom:0">
+      <span class="field-label">Genre</span>
+      <select id="genre">
+        <option value="general">General</option>
+        <option value="fantasy">Fantasy</option>
+        <option value="sci-fi">Sci-Fi</option>
+        <option value="mystery">Mystery</option>
+        <option value="adventure">Adventure</option>
+        <option value="romance">Romance</option>
+        <option value="comedy">Comedy</option>
+        <option value="historical">Historical</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0">
+      <span class="field-label">Tone</span>
+      <select id="tone">
+        <option value="engaging">Engaging</option>
+        <option value="whimsical">Whimsical</option>
+        <option value="suspenseful">Suspenseful</option>
+        <option value="heartwarming">Heartwarming</option>
+        <option value="humorous">Humorous</option>
+        <option value="poetic">Poetic</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0">
+      <span class="field-label">Story Type</span>
+      <div class="type-pills">
+        <button class="type-pill active" data-type="short" onclick="setType('short')">
+          Short <small>4–6 sentences</small>
+        </button>
+        <button class="type-pill" data-type="long" onclick="setType('long')">
+          Long <small>7–12 sentences</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WORD LIMIT ══ -->
+  <div class="word-limit-row">
+    <label class="toggle-wrap" for="limit-toggle">
+      <input type="checkbox" id="limit-toggle" onchange="onLimitToggle()" />
+      <span class="toggle-track"></span>
+    </label>
+    <span class="limit-label" onclick="document.getElementById('limit-toggle').click()">
+      Limit story to max words
+    </span>
+    <div id="limit-controls">
+      <input type="range" id="word-slider" min="50" max="800" step="25" value="200"
+             oninput="document.getElementById('limit-val').textContent = this.value + ' words'" />
+      <span class="limit-val" id="limit-val">200 words</span>
+    </div>
+  </div>
+
+  <!-- ══ GENERATE ══ -->
+  <button id="generate-btn" onclick="handleGenerate()">
+    <span class="spinner" id="btn-spinner"></span>
+    <span id="btn-label">✦ Generate Story</span>
+  </button>
+
+  <!-- Progress (Excel batch) -->
+  <div id="progress-wrap">
+    <div class="progress-label" id="progress-label"></div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="error-box"></div>
+
+  <!-- ══ OUTPUT ══ -->
+  <div id="output-section">
+    <hr class="divider" />
+
+    <!-- Tab nav (Excel mode) -->
+    <div id="tab-nav"></div>
+
+    <div class="output-header">
+      <h2 id="output-heading">Your Story</h2>
+      <div class="meta-pills" id="meta-pills"></div>
+    </div>
+
+    <!-- Story text -->
+    <div id="story-box"></div>
+
+    <!-- Comprehension Questions -->
+    <div id="questions-box">
+      <div class="questions-heading">📝 Comprehension Questions</div>
+      <ol id="questions-list"></ol>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-row">
+      <button class="btn-out" id="copy-story-btn"  onclick="copyText('story')">📋 Copy Story</button>
+      <button class="btn-out" id="copy-q-btn"       onclick="copyText('questions')">📋 Copy Questions</button>
+      <button class="btn-out"                        onclick="printOutput()">🖨 Print</button>
+      <button class="btn-out"                        onclick="handleGenerate()">↺ Regenerate</button>
+    </div>
+  </div>
+
+</div><!-- /.card -->
+
+<footer>Powered by Claude &nbsp;·&nbsp; Vercel API &nbsp;·&nbsp; SiteGround</footer>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  CONFIG — Vercel deployment URL
+// ════════════════════════════════════════════════════════════
+const API_URL = "https://vocab-story-ai.vercel.app/api/story";
+
+// ════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════
+let currentMode  = 'manual';  // 'manual' | 'excel'
+let currentType  = 'short';   // 'short' | 'long'
+let tags         = [];        // manual entry words
+let sheets       = [];        // [{ name, words }] from Excel
+let storyResults = {};        // { sheetName: parsedResult | { error } }
+let activeTab    = null;
+let busy         = false;
+
+// ════════════════════════════════════════════════════════════
+//  MODE
+// ════════════════════════════════════════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btn-manual').classList.toggle('active', mode === 'manual');
+  document.getElementById('btn-excel').classList.toggle('active',  mode === 'excel');
+  document.getElementById('manual-panel').style.display = mode === 'manual' ? 'block' : 'none';
+  document.getElementById('excel-panel').classList.toggle('show',  mode === 'excel');
+  document.getElementById('btn-label').textContent =
+    mode === 'excel' ? '✦ Generate All Stories' : '✦ Generate Story';
+  hideOutput(); hideError();
+}
+
+// ════════════════════════════════════════════════════════════
+//  STORY TYPE
+// ════════════════════════════════════════════════════════════
+function setType(type) {
+  currentType = type;
+  document.querySelectorAll('.type-pill').forEach(p =>
+    p.classList.toggle('active', p.dataset.type === type)
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+//  WORD TAGS (manual)
+// ════════════════════════════════════════════════════════════
+const tagContainer = document.getElementById('tag-container');
+const wordInput    = document.getElementById('word-input');
+
+wordInput.addEventListener('keydown', e => {
+  if (['Enter', ',', 'Tab'].includes(e.key)) { e.preventDefault(); addTag(wordInput.value); }
+  if (e.key === 'Backspace' && wordInput.value === '' && tags.length) removeTag(tags.length - 1);
+});
+wordInput.addEventListener('blur', () => { if (wordInput.value.trim()) addTag(wordInput.value); });
+
+function addTag(raw) {
+  const w = raw.trim().replace(/,+$/, '').toLowerCase();
+  if (!w || tags.includes(w) || tags.length >= 30) { wordInput.value = ''; return; }
+  tags.push(w);
+  renderTags();
+  wordInput.value = '';
+}
+function removeTag(i) { tags.splice(i, 1); renderTags(); }
+function renderTags() {
+  tagContainer.querySelectorAll('.tag').forEach(t => t.remove());
+  tags.forEach((w, i) => {
+    const el = document.createElement('span');
+    el.className = 'tag';
+    el.innerHTML = `${escHtml(w)}<button type="button" aria-label="Remove" onclick="removeTag(${i})">×</button>`;
+    tagContainer.insertBefore(el, wordInput);
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+//  WORD LIMIT TOGGLE
+// ════════════════════════════════════════════════════════════
+function onLimitToggle() {
+  const on = document.getElementById('limit-toggle').checked;
+  document.getElementById('limit-controls').classList.toggle('show', on);
+}
+function getMaxWords() {
+  if (!document.getElementById('limit-toggle').checked) return null;
+  return parseInt(document.getElementById('word-slider').value, 10);
+}
+
+// ════════════════════════════════════════════════════════════
+//  EXCEL UPLOAD
+// ════════════════════════════════════════════════════════════
+function onDragOver(e)  { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function onDragLeave()  { document.getElementById('drop-zone').classList.remove('drag-over'); }
+function onDrop(e)      { e.preventDefault(); onDragLeave(); const f = e.dataTransfer.files[0]; if (f) parseExcel(f); }
+function onFileSelect(e){ const f = e.target.files[0]; if (f) parseExcel(f); }
+
+function parseExcel(file) {
+  if (!/\.xlsx?$/i.test(file.name)) { showError('Please upload an .xlsx or .xls file.'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+      const parsed = wb.SheetNames.map(name => {
+        const rows  = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '' });
+        const words = rows.flat()
+          .map(c => String(c).trim().toLowerCase())
+          .filter(w => w && /^[a-zA-Z]/.test(w) && w.length > 1)
+          .filter((w, i, a) => a.indexOf(w) === i)  // dedupe
+          .slice(0, 30);
+        return { name, words };
+      }).filter(s => s.words.length > 0);
+
+      if (!parsed.length) { showError('No words found. Add words to your sheet cells and try again.'); return; }
+      sheets = parsed;
+      storyResults = {};
+      renderSheetPreview();
+      hideOutput(); hideError();
+    } catch { showError('Could not read the file. Make sure it is a valid .xlsx file.'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderSheetPreview() {
+  document.getElementById('preview-header').textContent =
+    `${sheets.length} sheet${sheets.length !== 1 ? 's' : ''} detected`;
+  const list = document.getElementById('sheet-list');
+  list.innerHTML = '';
+  sheets.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'sheet-item';
+    el.id = `sheet-item-${i}`;
+    el.innerHTML = `
+      <span class="sheet-icon">📄</span>
+      <div class="sheet-info">
+        <div class="sheet-name">${escHtml(s.name)}</div>
+        <div class="sheet-meta">${s.words.length} word${s.words.length !== 1 ? 's' : ''} found</div>
+        <div class="sheet-words-preview">${s.words.slice(0, 10).join(', ')}${s.words.length > 10 ? '…' : ''}</div>
+      </div>
+      <span class="sheet-status pending" id="status-${i}">Pending</span>`;
+    list.appendChild(el);
+  });
+  document.getElementById('sheet-preview').classList.add('show');
+}
+
+const STATUS_TEXT = { pending: 'Pending', running: '⏳ Generating…', done: '✓ Done', error: '✗ Error' };
+function setSheetStatus(i, s) {
+  const el = document.getElementById(`status-${i}`);
+  if (!el) return;
+  el.className = `sheet-status ${s}`;
+  el.textContent = STATUS_TEXT[s];
+}
+
+// ════════════════════════════════════════════════════════════
+//  GENERATE — entry point
+// ════════════════════════════════════════════════════════════
+async function handleGenerate() {
+  if (busy) return;
+  currentMode === 'manual' ? await generateSingle() : await generateBatch();
+}
+
+// ── Single (manual mode) ─────────────────────────────────────
+async function generateSingle() {
+  if (wordInput.value.trim()) addTag(wordInput.value);
+  if (!tags.length) { showError('Please add at least one word before generating.'); return; }
+  setBusy(true); hideError(); hideOutput();
+  try {
+    const result = await callAPI(tags, currentType, getMaxWords());
+    renderSingle(result);
+  } catch (err) {
+    showError(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    setBusy(false);
+  }
+}
+
+// ── Batch (Excel mode) ───────────────────────────────────────
+async function generateBatch() {
+  if (!sheets.length) { showError('Please upload an Excel file first.'); return; }
+  setBusy(true); hideError(); hideOutput(); storyResults = {};
+
+  sheets.forEach((_, i) => setSheetStatus(i, 'pending'));
+
+  const pw    = document.getElementById('progress-wrap');
+  const fill  = document.getElementById('progress-fill');
+  const plbl  = document.getElementById('progress-label');
+  pw.classList.add('show');
+  fill.style.width = '0%';
+
+  const maxWords = getMaxWords();
+  let done = 0;
+
+  for (let i = 0; i < sheets.length; i++) {
+    const s = sheets[i];
+    setSheetStatus(i, 'running');
+    plbl.textContent = `Generating story ${i + 1} of ${sheets.length}: "${s.name}"…`;
+    try {
+      const result = await callAPI(s.words, currentType, maxWords);
+      storyResults[s.name] = result;
+      setSheetStatus(i, 'done');
+    } catch (err) {
+      storyResults[s.name] = { error: err.message || 'Generation failed' };
+      setSheetStatus(i, 'error');
+    }
+    done++;
+    fill.style.width = `${(done / sheets.length) * 100}%`;
+  }
+
+  plbl.textContent = `✓ All ${sheets.length} stories complete.`;
+  setBusy(false);
+  renderBatch();
+}
+
+// ════════════════════════════════════════════════════════════
+//  API
+// ════════════════════════════════════════════════════════════
+async function callAPI(words, length, maxWords) {
+  const res  = await fetch(API_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({
+      words,
+      genre:    document.getElementById('genre').value,
+      tone:     document.getElementById('tone').value,
+      length,
+      maxWords: maxWords || null
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+  return data;
+}
+
+// ════════════════════════════════════════════════════════════
+//  RENDER — SINGLE
+// ════════════════════════════════════════════════════════════
+function renderSingle(data) {
+  document.getElementById('tab-nav').classList.remove('show');
+  document.getElementById('tab-nav').innerHTML = '';
+  document.getElementById('output-heading').textContent = 'Your Story';
+  renderOutputPanel(data);
+  showOutput();
+}
+
+// ════════════════════════════════════════════════════════════
+//  RENDER — BATCH (tabs)
+// ════════════════════════════════════════════════════════════
+function renderBatch() {
+  const nav  = document.getElementById('tab-nav');
+  nav.innerHTML = '';
+  nav.classList.add('show');
+  const keys = Object.keys(storyResults);
+  if (!keys.length) return;
+  keys.forEach(name => {
+    const btn = document.createElement('button');
+    btn.className = 'story-tab' + (storyResults[name].error ? ' has-error' : '');
+    btn.textContent = name;
+    btn.dataset.name = name;
+    btn.onclick = () => switchTab(name);
+    nav.appendChild(btn);
+  });
+  switchTab(keys[0]);
+  showOutput();
+}
+
+function switchTab(name) {
+  activeTab = name;
+  document.querySelectorAll('.story-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.name === name)
+  );
+  document.getElementById('output-heading').textContent = `Story: ${name}`;
+  const result = storyResults[name];
+  if (result.error) {
+    document.getElementById('story-box').innerHTML =
+      `<span style="color:var(--danger)">⚠ ${escHtml(result.error)}</span>`;
+    document.getElementById('questions-box').style.display = 'none';
+    document.getElementById('meta-pills').innerHTML = '';
+  } else {
+    document.getElementById('questions-box').style.display = '';
+    renderOutputPanel(result);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  RENDER — OUTPUT PANEL (shared)
+// ════════════════════════════════════════════════════════════
+function renderOutputPanel(data) {
+  const { title, storyHtml, questions } = parseStory(data.story || '');
+
+  // Story box — inject rendered HTML (bold words already converted)
+  const box = document.getElementById('story-box');
+  box.innerHTML = (title
+    ? `<span class="story-title">${escHtml(title)}</span>`
+    : '') + storyHtml;
+
+  // Questions
+  const qList = document.getElementById('questions-list');
+  qList.innerHTML = '';
+  questions.forEach(q => {
+    const li = document.createElement('li');
+    li.textContent = q;
+    qList.appendChild(li);
+  });
+  document.getElementById('questions-box').style.display = questions.length ? '' : 'none';
+
+  // Meta pills
+  const pills = [
+    data.genre && `📚 ${data.genre}`,
+    data.tone  && `🎭 ${data.tone}`,
+    data.length === 'short' ? '📄 Short (4–6 sentences)' : '📃 Long (7–12 sentences)',
+    data.maxWords ? `🔢 ≤ ${data.maxWords} words` : null,
+    data.wordsUsed?.length ? `${data.wordsUsed.length} words used` : null,
+  ].filter(Boolean);
+  document.getElementById('meta-pills').innerHTML =
+    pills.map(t => `<span class="pill">${escHtml(t)}</span>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+//  PARSE STORY RESPONSE
+// ════════════════════════════════════════════════════════════
+function parseStory(raw) {
+  let text = raw.trim();
+
+  // 1. Extract title
+  let title = '';
+  const titleMatch = text.match(/^Title:\s*(.+)/im);
+  if (titleMatch) {
+    title = titleMatch[1].trim();
+    text  = text.replace(/^Title:\s*.+\n?/im, '').trim();
+  }
+
+  // 2. Split story body from questions
+  const qSplit       = text.split(/\n\s*QUESTIONS:\s*\n/i);
+  const bodyRaw      = qSplit[0].trim();
+  const questionsRaw = qSplit[1] ? qSplit[1].trim() : '';
+
+  // 3. Convert **word** → <strong>word</strong>
+  const storyHtml = markdownBoldToHtml(bodyRaw);
+
+  // 4. Parse numbered questions
+  const questions = questionsRaw
+    .split(/\n/)
+    .map(l => l.replace(/^\d+[.)]\s*/, '').trim())
+    .filter(Boolean);
+
+  return { title, storyHtml, questions };
+}
+
+// Convert **word** markdown to <strong>word</strong> safely
+function markdownBoldToHtml(text) {
+  const segments    = [];
+  const placeholder = '\x00BOLD\x00';
+  const extracted   = text.replace(/\*\*(.+?)\*\*/g, (_, inner) => {
+    segments.push(inner);
+    return placeholder;
+  });
+  const escaped = escHtml(extracted);
+  let idx = 0;
+  const result = escaped.replace(new RegExp(escHtml(placeholder), 'g'), () => {
+    const word = segments[idx++] || '';
+    return `<strong>${escHtml(word)}</strong>`;
+  });
+  return result.replace(/\n/g, '<br>');
+}
+
+// ════════════════════════════════════════════════════════════
+//  COPY / PRINT
+// ════════════════════════════════════════════════════════════
+function copyText(what) {
+  let text = '';
+  if (what === 'story') {
+    text = document.getElementById('story-box').innerText;
+  } else {
+    const items = [...document.querySelectorAll('#questions-list li')];
+    text = items.map((li, i) => `${i + 1}. ${li.textContent}`).join('\n');
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = what === 'story'
+      ? document.getElementById('copy-story-btn')
+      : document.getElementById('copy-q-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✔ Copied!';
+    btn.classList.add('success');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('success'); }, 2000);
+  });
+}
+
+function printOutput() {
+  const titleEl   = document.querySelector('#story-box .story-title');
+  const title     = titleEl ? titleEl.textContent : 'Story';
+  const storyHTML = document.getElementById('story-box').innerHTML;
+  const qItems    = [...document.querySelectorAll('#questions-list li')];
+  const qHTML     = qItems.length
+    ? `<h3 style="margin-top:2rem;font-size:1rem">Comprehension Questions</h3>
+       <ol>${qItems.map(li => `<li style="margin:.5rem 0">${li.textContent}</li>`).join('')}</ol>`
+    : '';
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>${escHtml(title)}</title>
+    <style>body{font-family:Georgia,serif;max-width:680px;margin:2rem auto;line-height:1.85;font-size:1rem}
+    strong{font-weight:700} h3{font-size:1rem}</style></head><body>${storyHTML}${qHTML}</body></html>`);
+  w.document.close();
+  w.print();
+}
+
+// ════════════════════════════════════════════════════════════
+//  UI HELPERS
+// ════════════════════════════════════════════════════════════
+function setBusy(on) {
+  busy = on;
+  document.getElementById('generate-btn').disabled = on;
+  document.getElementById('btn-spinner').classList.toggle('show', on);
+}
+function showOutput()  { document.getElementById('output-section').classList.add('show'); }
+function hideOutput()  { document.getElementById('output-section').classList.remove('show'); }
+function showError(m)  { const b = document.getElementById('error-box'); b.textContent = '⚠ ' + m; b.classList.add('show'); }
+function hideError()   { document.getElementById('error-box').classList.remove('show'); }
+function escHtml(s)    {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+
+</body>
+</html>
