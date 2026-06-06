@@ -730,7 +730,7 @@
 <async function generateStory() {
   const prompt = document.getElementById("prompt").value;
 
-  const response = await fetch("https://project-mgbwc.vercel.app", {
+  const response = await fetch("https://generatedstories.vercel.app/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ prompt })
