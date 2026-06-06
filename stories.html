@@ -727,7 +727,19 @@
 
 <footer>Powered by Claude &nbsp;·&nbsp; Vercel API &nbsp;·&nbsp; SiteGround</footer>
 
-<script>
+<async function generateStory() {
+  const prompt = document.getElementById("prompt").value;
+
+  const response = await fetch("https://vocab-story-ai.vercel.app", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt })
+  });
+
+  const data = await response.json();
+  document.getElementById("story").innerText = data.story;
+}
+>
 // ════════════════════════════════════════════════════════════
 //  CONFIG — Vercel deployment URL
 // ════════════════════════════════════════════════════════════
