@@ -1,5 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
+const DEFAULT_MODEL = "claude-sonnet-4-6";
+
 const allowedOrigins = new Set([
   "https://lizc71.sg-host.com",
   "http://localhost:3000",
@@ -73,7 +75,7 @@ Requirements:
     });
 
     const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20240620",
+      model: process.env.ANTHROPIC_MODEL || DEFAULT_MODEL,
       max_tokens: maxWords ? Math.min(Math.max(Number(maxWords) * 3, 500), 1800) : 1200,
       messages: [
         {
