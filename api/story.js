@@ -39,13 +39,13 @@ function ageGuidanceFor(ageGroup) {
   const guidance = {
     under4: {
       label: "under 4 years old",
-      readingLevel: "Use very simple words, short clear sentences, gentle repetition, concrete actions, and a warm playful feeling.",
-      questions: "Ask very easy questions about who, what, or where."
+      readingLevel: "Use baby-preschool language. Write one very short sentence per line. Use mostly 3 to 6 words per sentence. Use simple names, animals, colors, objects, and actions. Repeat words naturally. Avoid long words, clauses, figurative language, and complex plot.",
+      questions: "Ask very easy questions with simple words, such as who, what, or where."
     },
     "4to5": {
       label: "4 to 5 years old",
-      readingLevel: "Use simple preschool language, short sentences, familiar ideas, repetition, and a fun interesting plot that is easy to follow.",
-      questions: "Ask simple questions about characters, places, and one clear event."
+      readingLevel: "Match this reading style: Max is a cat. Max has a red hat. The rat runs up. The pig says oink. Write one short sentence per line. Use mostly 4 to 7 words per sentence. Use simple CVC-friendly words when possible, clear names, colors, animals, objects, and actions. Make the story easy, interesting, and decodable for a 4-year-old. Avoid compound sentences, hard vocabulary, abstract ideas, and long descriptions.",
+      questions: "Ask simple questions using easy words, focused on one character, one object, or one action."
     },
     "5to8": {
       label: "5 to 8 years old",
@@ -87,14 +87,14 @@ function storyTypeGuidanceFor(storyType, tone, style) {
   if (selectedType.includes("funny")) {
     return {
       label: "funny",
-      guidance: "Make the story genuinely funny with playful surprises, harmless misunderstandings, witty moments, and a cheerful ending."
+      guidance: "Make the story funny with simple playful surprises, harmless mix-ups, and a cheerful ending. For very young readers, keep the humor easy, like a cat in a hat, a sock on a pet, or animal sounds mixed up."
     };
   }
 
   if (selectedType.includes("silly")) {
     return {
       label: "silly",
-      guidance: "Make the story silly with goofy situations, playful exaggeration, absurd but understandable details, and lighthearted energy."
+      guidance: "Make the story silly with goofy but easy details, playful repetition, funny colors, animal sounds, simple surprises, and lighthearted energy. For very young readers, keep the silliness clear and concrete."
     };
   }
 
@@ -173,6 +173,7 @@ Requirements:
 - Include every vocabulary word exactly as provided: ${cleanWords.join(", ")}.
 - Bold each vocabulary word in the story using markdown, like **word**.
 - Make the story ${sentenceInstructionText} sentences long.
+- Put each story sentence on its own line.
 - Add a short title using this format: Title: <title>
 - After the story, include a QUESTIONS section with 3 comprehension questions.
 - ${ageGuidance.questions}
