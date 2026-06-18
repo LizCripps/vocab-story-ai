@@ -54,23 +54,23 @@ function ageGuidanceFor(ageGroup) {
     },
     "9to11": {
       label: "9 to 11 years old",
-      readingLevel: "Use middle-grade vocabulary, richer descriptions, light suspense or humor, and a clear problem-and-solution story arc.",
-      questions: "Ask questions about plot, character choices, and vocabulary meaning."
+      readingLevel: "Write for a true middle-grade reader, not an early reader. Use adventure, mystery, fantasy, school drama, or humor with a stronger plot. Include a clear goal, obstacle, rising tension, and a satisfying resolution. Give the main character a real choice or small emotional change. Avoid babyish nonsense, random talking animals, toilet humor, and purely cartoon events unless the selected theme truly requires fantasy.",
+      questions: "Ask questions about plot, character motivation, clues or conflict, and vocabulary meaning."
     },
     "12to14": {
       label: "12 to 14 years old",
-      readingLevel: "Use age-appropriate middle-school language, stronger pacing, more layered details, and a meaningful conflict or discovery.",
-      questions: "Ask questions that include inference, theme, and vocabulary usage."
+      readingLevel: "Write for middle-school interest level. Use a believable conflict, mystery, fantasy quest, realistic school/social tension, ethical dilemma, or discovery. Include stronger pacing, internal thoughts, cause-and-effect, and a character who learns or changes. Humor may be dry, awkward, or situational, but not childish slapstick. Avoid plots about random animals making messes, falling food, cartoon chaos, or jokes that feel written for ages 7 to 9.",
+      questions: "Ask questions that include inference, theme, character analysis, conflict, and vocabulary usage."
     },
     "15to17": {
       label: "15 to 17 years old",
-      readingLevel: "Use more mature high-school language, nuanced characterization, vivid imagery, and a thoughtful conflict without becoming too complex.",
-      questions: "Ask questions about inference, tone, theme, and how vocabulary words shape meaning."
+      readingLevel: "Write for teenagers. Use nuanced characterization, complex relationships, mystery, real-world pressure, fantasy or sci-fi stakes, identity, ambition, loyalty, risk, or moral tension. Humor should use irony, satire, sharp observation, or character-based wit. Keep the story concise but let it feel like YA flash fiction, not a children's nonsense story. Avoid childish cartoon images, random animal antics, flying toys, food disasters, and preschool-style absurdity.",
+      questions: "Ask questions about inference, tone, theme, character motivation, conflict, and how vocabulary words shape meaning."
     },
     "18plus": {
       label: "adult readers",
-      readingLevel: "Use polished adult language, natural pacing, precise imagery, and a concise literary or real-world narrative style.",
-      questions: "Ask questions about interpretation, implication, tone, and vocabulary usage."
+      readingLevel: "Write for adults. Use realistic situations, satire, literary tension, professional or personal stakes, moral ambiguity, social observation, or understated speculative elements. Build nuance, insight, subtext, and coherent emotional logic. Humor should have depth, irony, or satire rather than childish randomness. Avoid cartoonish nonsense, random talking animals, childish food messes, toy-like imagery, and surreal details that feel like children's stories with bigger words.",
+      questions: "Ask questions about interpretation, implication, tone, theme, subtext, and vocabulary usage."
     }
   };
 
@@ -87,14 +87,14 @@ function storyTypeGuidanceFor(storyType, tone, style) {
   if (selectedType.includes("funny")) {
     return {
       label: "funny",
-      guidance: "Make the story funny with simple playful surprises, harmless mix-ups, and a cheerful ending. For very young readers, keep the humor easy, like a cat in a hat, a sock on a pet, or animal sounds mixed up."
+      guidance: "Make the story funny in an age-appropriate way. For very young readers, use simple playful surprises like hats, socks, colors, and animal sounds. For ages 9 and up, use stronger plotting, irony, witty dialogue, awkward situations, satire, or character-based humor instead of childish randomness."
     };
   }
 
   if (selectedType.includes("silly")) {
     return {
       label: "silly",
-      guidance: "Make the story silly with goofy but easy details, playful repetition, funny colors, animal sounds, simple surprises, and lighthearted energy. For very young readers, keep the silliness clear and concrete."
+      guidance: "Make the story silly in an age-appropriate way. For very young readers, use clear concrete goofiness, repetition, funny colors, and simple surprises. For ages 9 and up, make silliness come from clever exaggeration, escalating complications, social awkwardness, satire, fantasy logic, or a surprising twist, not preschool-style nonsense."
     };
   }
 
