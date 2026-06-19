@@ -54,8 +54,8 @@ function ageGuidanceFor(ageGroup) {
     },
     "9to11": {
       label: "9 to 11 years old",
-      readingLevel: "Write for a true middle-grade reader, not an early reader. Use adventure, mystery, fantasy, school drama, or humor with a stronger plot. Include a clear goal, obstacle, rising tension, and a satisfying resolution. Give the main character a real choice or small emotional change. Avoid babyish nonsense, random talking animals, toilet humor, and purely cartoon events unless the selected theme truly requires fantasy.",
-      questions: "Ask questions about plot, character motivation, clues or conflict, and vocabulary meaning."
+      readingLevel: "Write for 9 to 11 year old kids using clear, comfortable middle-grade language. Keep sentences easy to follow but not babyish. Use a fun adventure, light mystery, fantasy problem, school challenge, friendship moment, or humorous situation. Include a clear beginning, problem, action, and ending. The main character should make one simple choice or learn one small lesson. Keep the story exciting and relatable, but avoid heavy themes, advanced vocabulary, complex symbolism, preschool-style nonsense, toilet humor, and random cartoon chaos.",
+      questions: "Ask questions about the main problem, what the character did, one story detail, and vocabulary meaning."
     },
     "12to14": {
       label: "12 to 14 years old",
