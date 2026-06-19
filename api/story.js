@@ -39,7 +39,7 @@ function ageGuidanceFor(ageGroup) {
   const guidance = {
     under4: {
       label: "under 4 years old",
-      readingLevel: "Use baby-preschool language. Write one very short sentence per line. Use mostly 3 to 6 words per sentence. Use simple names, animals, colors, objects, and actions. Repeat words naturally. Avoid long words, clauses, figurative language, and complex plot.",
+      readingLevel: "Use baby-preschool language. Write one very short sentence per line. Use mostly 3 to 6 words per sentence. Use a maximum of two characters, such as a dog, cat, duck, pig, or child. Build a real mini story in sequence: first something starts, then the characters do one or two simple actions, then there is a happy ending. Use gentle rhythm, repetition, and repeated sentence patterns so it feels like a small read-aloud story, not random lines. Keep every line connected to the line before it. Avoid long words, clauses, figurative language, complex plot, and adding extra characters.",
       questions: "Ask very easy questions with simple words, such as who, what, or where."
     },
     "4to5": {
