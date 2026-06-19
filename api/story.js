@@ -39,7 +39,7 @@ function ageGuidanceFor(ageGroup) {
   const guidance = {
     under4: {
       label: "under 4 years old",
-      readingLevel: "Use baby-preschool language. Write one very short sentence per line. Use mostly 3 to 6 words per sentence. Use a maximum of two characters, such as a dog, cat, duck, pig, or child. Build a real mini story in sequence: first something starts, then the characters do one or two simple actions, then there is a happy ending. Use gentle rhythm, repetition, and repeated sentence patterns so it feels like a small read-aloud story, not random lines. Keep every line connected to the line before it. Avoid long words, clauses, figurative language, complex plot, and adding extra characters.",
+      readingLevel: "Use baby-preschool language. Write one very short sentence per line. Use mostly 3 to 6 words per sentence. Use a maximum of two characters total, such as Dog and Duck, Cat and Pig, or one child and one animal. Do not add any other people, animals, apps, screens, or side characters. Build one real mini story in sequence: first the characters start in one place, then they do one or two simple connected actions, then there is a happy ending. Every vocabulary word must fit into this same tiny story; do not make each word a new random event. Use gentle rhythm, repetition, and repeated sentence patterns so it feels like a small read-aloud story. Keep every line connected to the line before it. Avoid long words, clauses, figurative language, complex plot, confusing objects, toilet humor, and random cartoon chaos. If a provided word is hard for toddlers, use it simply as one object in the same story, not as a new plot.",
       questions: "Ask very easy questions with simple words, such as who, what, or where."
     },
     "4to5": {
@@ -172,6 +172,7 @@ Story direction:
 Requirements:
 - Include every vocabulary word exactly as provided: ${cleanWords.join(", ")}.
 - Bold each vocabulary word in the story using markdown, like **word**.
+- Use the vocabulary words naturally inside one coherent story; do not turn the word list into disconnected events.
 - Make the story ${sentenceInstructionText} sentences long.
 - Put each story sentence on its own line.
 - Add a short title using this format: Title: <title>
